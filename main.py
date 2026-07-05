@@ -1,17 +1,17 @@
 import datetime
 import sys
 
-# Importing custom project configuration and core modules
+# Core configuration and voice sub-modules
 import config
 from voice.speaker import speak
 from voice.listener import take_command
 from ai.gemini_client import ask_gemini
 
-# Importing web automation functions from the automation package
+# Web automation module capabilities
 from automation.browser import open_youtube, play_on_youtube, search_google
 
 def wish_me():
-    """Wishes the user based on the current time of the day."""
+    """Greets the user dynamically based on the system time."""
     hour = int(datetime.datetime.now().hour)
     if 0 <= hour < 12:
         speak("Good Morning Boss!")
@@ -20,45 +20,45 @@ def wish_me():
     else:
         speak("Good Evening Boss!")
     
-    speak(f"{config.ASSISTANT_NAME} is online and ready.")
+    speak(f"{config.ASSISTANT_NAME} is online and fully operational.")
 
 def start_jarvis():
-    """The main execution loop for Jarvis."""
+    """Main execution thread mapping speech intents to actions or AI logic."""
     wish_me()
     
     while True:
-        # Listen for user voice command
         query = take_command()
         
-        # Termination clauses to safely stop the assistant
+        # Immediate termination signals
         if "stop" in query or "exit" in query or "bye" in query:
-            speak("Goodbye Boss! Have a great day ahead.")
+            speak("Goodbye Boss! Systems shutting down cleanly.")
             sys.exit()
             
+        # Ignore empty audio responses
         if query == "none":
             continue
             
-        # Browser and Web Automation routing
+        # Intent Routing: Web Browsing Automation
         if "open youtube" in query:
-            speak("Opening YouTube, Boss.")
+            speak("Opening YouTube right away, Boss.")
             open_youtube()
             continue
             
         elif "play" in query and "youtube" in query:
-            # Example: "play coding lofi on youtube" -> extracts "coding lofi"
+            # Isolates the song name from the spoken query phrase
             song = query.replace("play", "").replace("on youtube", "").strip()
-            speak(f"Playing {song} on YouTube, Boss.")
+            speak(f"Searching and playing {song} on YouTube, Boss.")
             play_on_youtube(song)
             continue
             
         elif "search" in query or "google" in query:
-            # Example: "search space exploration news" -> extracts search query
+            # Isolates the target search phrase
             search_item = query.replace("search", "").replace("google", "").strip()
-            speak(f"Searching Google for {search_item}, Boss.")
+            speak(f"Searching Google index for {search_item}, Boss.")
             search_google(search_item)
             continue
 
-        # Default fallback: Route conversational queries to Gemini AI
+        # Intent Routing: Fallback directly to generative AI capabilities
         response = ask_gemini(query)
         speak(response)
 
