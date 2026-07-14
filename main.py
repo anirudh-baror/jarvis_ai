@@ -3,6 +3,7 @@ import sys
 
 # Core configuration and voice sub-modules
 import config
+from ai.memory import init_db
 from voice.speaker import speak
 from voice.listener import take_command
 from ai.gemini_client import ask_gemini
@@ -24,6 +25,7 @@ def wish_me():
 
 def start_jarvis():
     """Main execution thread mapping speech intents to actions or AI logic."""
+    init_db()
     wish_me()
     
     while True:
