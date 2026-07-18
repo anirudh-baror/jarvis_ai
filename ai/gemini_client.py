@@ -5,6 +5,7 @@ import os
 import config
 from ai.memory import save_message, get_recent_history
 from automation.browser import open_youtube, play_on_youtube, search_google
+from plugins.loader import load_all_plugins
 
 load_dotenv()
 
@@ -12,7 +13,8 @@ API_KEY = os.getenv("GEMINI_API_KEY") or config.GEMINI_API_KEY
 
 client = genai.Client(api_key=API_KEY)
 
-# Jarvis's personality and behavior rules
+ALL_TOOLS = [open_youtube, play_on_youtube, search_google] + load_all_plugins()
+
 SYSTEM_INSTRUCTION = (
     "You are Jarvis, a witty and highly intelligent AI assistant with broad "
     "general knowledge on any topic that exists in the world. "
@@ -21,18 +23,20 @@ SYSTEM_INSTRUCTION = (
     "(do not use Devanagari script), e.g. 'Bharat ki rajdhani Nai Dilli hai'. "
     "If the user asks in English, reply in English. "
     "If the user asks in Hinglish, reply in the same Hinglish style. "
-    "Never refuse a general-knowledge question — answer confidently. "
     "You have access to tools for opening YouTube, playing something on YouTube, "
-    "and searching Google. Use the right tool whenever the user's request matches it. "
+    "searching Google, and getting the current time. "
+    "IMPORTANT: Only use a tool when the user's request clearly and explicitly "
+    "matches what that tool does (e.g. they say 'open youtube', 'play a song', "
+    "'search on google', or 'what time is it'). "
+    "For ALL general knowledge questions (facts, capitals, history, science, "
+    "definitions, opinions, etc.) — even if you could technically search for them — "
+    "answer directly from your own knowledge. Do NOT use the Google search tool "
+    "for questions you already know the answer to. Never refuse a general-knowledge "
+    "question — answer confidently from your own knowledge. "
     "After using a tool, briefly confirm what you did in one short sentence."
 )
 
 def ask_gemini(question):
-    """
-    Sends the user query to Gemini along with recent conversation history.
-    Gemini can automatically call browser automation tools (YouTube, Google search)
-    when the user's request matches, or answer directly as a normal question.
-    """
     try:
         history = get_recent_history(limit=6)
         history_text = ""
@@ -51,7 +55,7 @@ def ask_gemini(question):
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
-                tools=[open_youtube, play_on_youtube, search_google],
+                tools=ALL_TOOLS,
             ),
         )
         answer = response.text
